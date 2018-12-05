@@ -1,4 +1,5 @@
 - lower-case instructions
+- constants must be in upppercase
 - use underscores for word separation in variable names
 - documentation for each update
     * place in updates folder
