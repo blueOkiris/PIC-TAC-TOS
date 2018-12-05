@@ -2,7 +2,7 @@
 - use underscores for word separation in variable names
 - documentation for each update
     * place in updates folder
-    * Title: <Name>-MM/DD/YY-Topic.txt
+    * Title: <Name>-MM-DD-YY-Topic.txt
     * Update line description on functions affected
         ^ Avoid deletions without consultation
 - documentation for each label
