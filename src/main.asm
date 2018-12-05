@@ -26,11 +26,11 @@ KEY_COL	    equ	    1                   ; Which byte to store row and shift data
     udata   0x20                        ; Register file locations for system variables
 
 key_buff    res	    2
-i	    res	    1                       ; small loop var
-k	    res	    1                       ; outer loop var
-m	    res	    2                       ; loop var for large numbers
-n	    res	    2                       ; outer loop var for big numbers
-t	    res	    1                       ; Second working directory
+i           res	    1                   ; small loop var
+k           res	    1                   ; outer loop var
+m           res	    2                   ; loop var for large numbers
+n           res	    2                   ; outer loop var for big numbers
+t           res	    1                   ; Second working directory
 
 RES_VECT    CODE    0x0000              ; Processor reset vector
     goto    start
