@@ -1,0 +1,22 @@
+- lower-case instructions
+- use underscores for word separation in variable names
+- documentation for each update
+    * place in updates folder
+    * Title: <Name>-MM/DD/YY-Topic.txt
+    * Update line description on functions affected
+        ^ Avoid deletions without consultation
+- documentation for each label
+    * Explain function of code segment
+    * Include line for updates
+    * Put name
+- Indentation rules:
+    * labels take no indent
+    * instructions take second indent
+    * arguments take third
+    * in-line comments match furthest necessary indent (all comments in one line block)
+        ^ That said, try to avoid 80-char lines. Make exceptions for readablity
+    * 4-space indents
+- Header rules:
+    * Name
+    * Date
+    * Description
