@@ -70,21 +70,38 @@ sys_loop
     
 ; Description:
 ; Update key data from the builtin matrix keyboard (as opposed to an external one)
-; Update: Dylan - Improved code of function (only works with column 6 for all buttons)
+; Update: Dylan - Implemented double function
 key_update
     ; See if shift is pressed
     btfsc   PORTD, 7		    ; Is the button pressed? (active low)
     bsf	    key_buff + KEY_COL, 7   ; If so, set the column register to store shift @ b7
     
-    ; TODO: This can be made into a double loop (and thus more efficient)
+    movlw   0x77		    ; 0b0 1111110
+    movwf   k
+    call check_each_column
+    return
+; Description:
+; Small loop to iterate through each column of the keyboard
+; Update: Dylan - Created
+check_each_column
     ; Check column 0 for each row
-    movlw   0x6F		    ; b7 is input, turn off b6 with others on
+    movf    k			    ; move the mask into k
     movwf   PORTD
     movlw   0			    ; Set i to 1 to start (it will be shifted not incremented)
     movwf   i
-    call check_each_row_b6
+    call check_each_row
     
-check_each_row_b6
+    btfsc   k, 6		    ; return right before you would shift to the 7th bit (bc we don't want to do that!)
+    return
+    
+    rlf	    k			    ; Shift mask (Don't forget to re-add 1 to the end)
+    incf
+    goto    check_each_column
+    
+; Description:
+; Small loop to iterate through each row in the keyboard given a column from above
+; Update: Dylan - Created
+check_each_row
     ; Button is active low, so first read in C and flip it to be active high
     movf    PORTC, w
     comf    w			    ; Get 2's complement of w (invert and add 
@@ -100,14 +117,19 @@ check_each_row_b6
     rlf	    i			    ; Shift i to next bit
     btfss   i, 7		    ; When we get to the 8th row, i is 7th bit, stop
     return
-    goto    check_each_row_b6
+    goto    check_each_row
 row_check_set
-    btfsc   key_buff + KEY_COL, 6   ; Set the column only if column isn't set
-    bsf	    key_buff + KEY_COL, 6
+    movf    k, w		    ; Get the current bit mask for Port D
+    comf    w			    ; Invert to get something like 0b10010000 instead of 0b01101111
+    bsf	    w, 7		    ; Set most significant bit to off so we don't affect it (it's shift remember!)
+    iorwf   key_buff + KEY_COL, f   ; Or the current columns with the mask, 0b00010000 for example
     movf    i, w
     iorwf   key_buff + KEY_ROW, f   ; Mask, set the hit bit only
     return
 row_check_clear
+    movf    k, w		    ; Get the current bit mask for Port D
+    bsf	    w, 7		    ; Set most significant bit to on so we don't affect it (it's shift remember!)
+    andwf   key_buff + KEY_COL, f   ; And the current columns with the mask, 0b11101111 for example
     movf    i, w
     comf    w
     andwf   key_buff + KEY_ROW, f   ; Mask, clear the hit bit only

@@ -5,3 +5,4 @@
     * They are, for small loops i.e. a byte: i & k, and for big loops i.e. 2 bytes: m and n.
     * Note: There is no need for proper naming convention bc these are ONLY used for loops!
 - By 6:33 I had implemented a basic inner loop for the checking function using shifts and masks. The next step is to replicate this to use an outer loop for mask
+- Finally, I had finished the double loop. Still untested (as we don't have the keyboard). That said we could test it through simulation, but it's more work than I'm willing to put in for now.
