@@ -20,12 +20,18 @@
     
     radix   dec
     
-    udata   0x20		    ; Register file locations for system variables
-    
 KEY_ROW	    equ	    0		    ; Which byte to of key_buff to store row data in
 KEY_COL	    equ	    1		    ; Which byte to store row and shift data in
-key_buff    res	    2
     
+    udata   0x20		    ; Register file locations for system variables
+
+key_buff    res	    2
+i	    res	    1		    ; small loop var
+k	    res	    1		    ; outer loop var
+m	    res	    2		    ; loop var for large numbers
+n	    res	    2		    ; outer loop var for big numbers
+t	    res	    1		    ; Second working directory
+
 RES_VECT    CODE    0x0000	    ; Processor reset vector
     goto    start
     
@@ -64,7 +70,7 @@ sys_loop
     
 ; Description:
 ; Update key data from the builtin matrix keyboard (as opposed to an external one)
-; Update: Dylan - Created function (only works with column 6 for all buttons)
+; Update: Dylan - Improved code of function (only works with column 6 for all buttons)
 key_update
     ; See if shift is pressed
     btfsc   PORTD, 7		    ; Is the button pressed? (active low)
@@ -74,69 +80,37 @@ key_update
     ; Check column 0 for each row
     movlw   0x6F		    ; b7 is input, turn off b6 with others on
     movwf   PORTD
-c_66
-    btfsc   PORTC, 6		    ; Test row 6
-    goto _66
-    goto c_65
-_66
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 6
+    movlw   0			    ; Set i to 1 to start (it will be shifted not incremented)
+    movwf   i
+    call check_each_row_b6
     
-c_65
-    btfsc   PORTC, 5		    ; Test row 5
-    goto _65
-    goto c_64
-_65
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 5
+check_each_row_b6
+    ; Button is active low, so first read in C and flip it to be active high
+    movf    PORTC, w
+    comf    w			    ; Get 2's complement of w (invert and add 
+    incf    w
     
-c_64
-    btfsc   PORTC, 4		    ; Test row 4
-    goto _64
-    goto c_63
-_64
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 4
+    ; Now check if current w is correct
+    andwf   i, w		    ; Will check only current bit
+    btfsc   STATUS, Z		    ; Check if pressed (pressed => != 0 => Z = 0)
+    call    row_check_set
+    btfss   STATUS, Z
+    call    row_check_clear
     
-c_63
-    btfsc   PORTC, 3		    ; Test row 3
-    goto _63
-    goto c_62
-_63
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 3
-    
-c_62
-    btfsc   PORTC, 2		    ; Test row 2
-    goto _62
-    goto c_61
-_62
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 2
-    
-c_61
-    btfsc   PORTC, 1		    ; Test row 1
-    goto _61
-    goto c_60
-_61
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
-    bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 1
-    
-c_60
-    btfsc   PORTC, 0		    ; Test row 0
-    goto _60
+    rlf	    i			    ; Shift i to next bit
+    btfss   i, 7		    ; When we get to the 8th row, i is 7th bit, stop
     return
-_60
-    btfsc   key_buff + KEY_COL, 6   ; If col 6 is already on don't set again
+    goto    check_each_row_b6
+row_check_set
+    btfsc   key_buff + KEY_COL, 6   ; Set the column only if column isn't set
     bsf	    key_buff + KEY_COL, 6
-    bsf	    key_buff + KEY_ROW, 0
-    
+    movf    i, w
+    iorwf   key_buff + KEY_ROW, f   ; Mask, set the hit bit only
+    return
+row_check_clear
+    movf    i, w
+    comf    w
+    andwf   key_buff + KEY_ROW, f   ; Mask, clear the hit bit only
     return
 
 ; Description:

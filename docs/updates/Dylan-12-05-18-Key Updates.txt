@@ -1,2 +1,7 @@
 - As of 2:45ish I have created a basic outline of how to check a key input, however it is not very efficient and should be in a loop. I will attend to that ASAP
 - I have also created a basic layout for the Keyboard based on a standard keyboard layout, minus a few keys that I and Nick deemed unnecessary
+
+- 5:55 I started again and went to put the key checking into a loop. To do this I needed a countdown register, so I created a few for temporary loop use.
+    * They are, for small loops i.e. a byte: i & k, and for big loops i.e. 2 bytes: m and n.
+    * Note: There is no need for proper naming convention bc these are ONLY used for loops!
+- By 6:33 I had implemented a basic inner loop for the checking function using shifts and masks. The next step is to replicate this to use an outer loop for mask
