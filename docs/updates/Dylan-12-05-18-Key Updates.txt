@@ -1,0 +1,2 @@
+- As of 2:45ish I have created a basic outline of how to check a key input, however it is not very efficient and should be in a loop. I will attend to that ASAP
+- I have also created a basic layout for the Keyboard based on a standard keyboard layout, minus a few keys that I and Nick deemed unnecessary
