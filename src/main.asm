@@ -22,11 +22,70 @@
     
     udata   0x20		; Register file locations for system variables
     
+KEY_ROW	    equ	    0		; Which byte to of key_buff to store row data in
+KEY_COL	    equ	    1		; Which byte to store row and shift data in
+key_buff    res	    2
+    
 RES_VECT    CODE    0x0000	; Processor reset vector
-    pagesel start
     goto    start
     
-MAIN_PROG   CODE
+MAIN_PROG   CODE    0x0005
 start
+    call    key_init
+    call    output_init
     
+    goto    sys_loop
     
+; Description:
+; This is the main program loop where all other functions are called.
+; The program loops forever, reading input, processing, and displaying output
+; Essentially, it will call 2 functions, Read Keyboard and Interpret data and
+; And loop
+; Update: Created function
+sys_loop
+    ; Basic setup (will change/TODO)
+    ; call read_key
+    ; call interpret
+    goto sys_loop
+
+; Description:
+; This function sets up ports C and D for use with the button matrix keyboard
+; C is used for rows, bits 0-7 as input
+; D is used for columns, bits 0-7 as output
+; D is also for Shift button, bit 8 as input
+; Update: created function
+key_init
+    ; Set all of C to input and all but bit 7 of D to output
+    banksel TRISC
+    clrf    TRISC
+    movlw   0xFF
+    movwf   TRISC
+    clrf    TRISD
+    bsf	    TRISD, 7
+    
+    ; Clear initial output pins (by setting high)
+    banksel PORTC
+    movlw   0x7F		; Don't set last bit! (MSB)
+    movwf   PORTD
+    
+    return
+
+; Description:
+; Setup the outputs of the system: the LCD and the External Memory
+; This is first 3 bits of Port E where
+; bit 0 -> Serial out for LCD (Output)
+; bit 1 -> I2C memory Clk (Output)
+; bit 3 -> I2C data (In & Out)
+; Update: Initial creation
+output_init
+    ; Setup input & output (to start all as output)
+    banksel TRISE
+    clrf    TRISE
+    
+    ; Clear to start
+    banksel PORTE
+    clrf    PORTE
+    
+    return
+    
+    end
