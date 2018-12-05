@@ -1,0 +1,7 @@
+Message[310] E:\PROGRAM FILES (X86)\MICROCHIP\MPLABX\V5.10\MPASMX\P16F887.INC 1522 : Superseding current maximum RAM and RAM map.
+Message[302] SRC\MAIN.ASM 76 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 78 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 79 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 80 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 81 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 105 : Register in operand not in bank 0.  Ensure that bank bits are correct.

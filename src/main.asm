@@ -29,7 +29,10 @@ key_buff    res	    2
 RES_VECT    CODE    0x0000	; Processor reset vector
     goto    start
     
-MAIN_PROG   CODE    0x0005
+INT_VECT  CODE	    0x0004	; interrupt vector
+    goto    isr			; go to interrupt service routine
+    
+MAIN_PROG   CODE
 start
     call    key_init
     call    output_init
@@ -37,14 +40,26 @@ start
     goto    sys_loop
     
 ; Description:
+; Interrupt functions etc.
+; Update: Dylan - create function
+isr
+    movlw   0x00
+    movwf   INTCON		; Disable other interrupts
+    
+    ; TODO: Read and update keyboard
+    ; call key_update -> move row into key_buff + KEY_ROW and move col into key_buff + KEY_COL
+    
+    movlw   b'10001000'		; Enable keyboard interrupt
+    movwf   INTCON
+    return			; Highly suspicious. May not worlk!
+    
+; Description:
 ; This is the main program loop where all other functions are called.
 ; The program loops forever, reading input, processing, and displaying output
-; Essentially, it will call 2 functions, Read Keyboard and Interpret data and
-; And loop
+; Essentially, it will call 1 functions, Interpret data, and loop
 ; Update: Created function
 sys_loop
     ; Basic setup (will change/TODO)
-    ; call read_key
     ; call interpret
     goto sys_loop
 
@@ -53,13 +68,15 @@ sys_loop
 ; C is used for rows, bits 0-7 as input
 ; D is used for columns, bits 0-7 as output
 ; D is also for Shift button, bit 8 as input
-; Update: created function
+; B is used as an interrupt on bit 0 as output
+; Update: Added B interrupt logic
 key_init
     ; Set all of C to input and all but bit 7 of D to output
     banksel TRISC
     clrf    TRISC
     movlw   0xFF
     movwf   TRISC
+    movwf   TRISB
     clrf    TRISD
     bsf	    TRISD, 7
     
@@ -67,6 +84,11 @@ key_init
     banksel PORTC
     movlw   0x7F		; Don't set last bit! (MSB)
     movwf   PORTD
+    clrf    PORTC
+    
+    ; Setup the keyboard interrupt bit
+    movlw   b'10001000'
+    movwf   INTCON		; Enable B0 interrupt
     
     return
 
