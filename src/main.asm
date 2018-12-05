@@ -1,15 +1,12 @@
 ; Author: Dylan Turner
 ; Filename: main.asm
 ; Description: The main overarching place for the program including:
-;		    * Entry point
-;		    * Port initialization
-;		    * System variable descriptions
-
+;        * Entry point
+;        * Port initialization
+;        * System variable descriptions
+    
     list    p=16F887
     #include "p16f887.inc"
-    
-    list	p=16F887
-    #include	"p16f887.inc"
     ; PIC16F887 Configuration Bit Settings
     ; CONFIG1
     ; __config 0x20F5
@@ -20,22 +17,22 @@
     
     radix   dec
     
-KEY_ROW	    equ	    0                   ; Which byte to of key_buff to store row data in
-KEY_COL	    equ	    1                   ; Which byte to store row and shift data in
+KEY_ROW     equ     0                   ; Which byte to of key_buff to store row data in
+KEY_COL     equ     1                   ; Which byte to store row and shift data in
     
     udata   0x20                        ; Register file locations for system variables
 
-key_buff    res	    2
-i           res	    1                   ; small loop var
-k           res	    1                   ; outer loop var
-m           res	    2                   ; loop var for large numbers
-n           res	    2                   ; outer loop var for big numbers
-t           res	    1                   ; Second working directory
+key_buff    res     2
+i           res     1                   ; small loop var
+k           res     1                   ; outer loop var
+m           res     2                   ; loop var for large numbers
+n           res     2                   ; outer loop var for big numbers
+t           res     1                   ; Second working directory
 
 RES_VECT    CODE    0x0000              ; Processor reset vector
     goto    start
     
-INT_VECT  CODE	    0x0004              ; interrupt vector
+INT_VECT    CODE    0x0004              ; interrupt vector
     goto    isr                         ; go to interrupt service routine
     
 MAIN_PROG   CODE
@@ -74,7 +71,7 @@ sys_loop
 key_update
     ; See if shift is pressed
     btfsc   PORTD, 7                    ; Is the button pressed? (active low)
-    bsf	    key_buff + KEY_COL, 7       ; If so, set the column register to store shift @ b7
+    bsf     key_buff + KEY_COL, 7       ; If so, set the column register to store shift @ b7
     
     movlw   0x77                        ; 0b0 1111110
     movwf   k
@@ -90,12 +87,12 @@ check_each_column
     movwf   PORTD
     movlw   0                           ; Set i to 1 to start (it will be shifted not incremented)
     movwf   i
-    call check_each_row
+    call check_each_row 
     
     btfsc   k, 6                        ; return right before you would shift to the 7th bit (bc we don't want to do that!)
     return
     
-    rlf	    k                           ; Shift mask (Don't forget to re-add 1 to the end)
+    rlf     k                           ; Shift mask (Don't forget to re-add 1 to the end)
     incf
     goto    check_each_column
     
@@ -115,21 +112,21 @@ check_each_row
     btfss   STATUS, Z
     call    row_check_clear
     
-    rlf	    i                           ; Shift i to next bit
+    rlf     i                           ; Shift i to next bit
     btfss   i, 7                        ; When we get to the 8th row, i is 7th bit, stop
     return
     goto    check_each_row
 row_check_set
     movf    k, w                        ; Get the current bit mask for Port D
     comf    w                           ; Invert to get something like 0b10010000 instead of 0b01101111
-    bsf	    w, 7                        ; Set most significant bit to off so we don't affect it (it's shift remember!)
+    bsf     w, 7                        ; Set most significant bit to off so we don't affect it (it's shift remember!)
     iorwf   key_buff + KEY_COL, f       ; Or the current columns with the mask, 0b00010000 for example
     movf    i, w
     iorwf   key_buff + KEY_ROW, f       ; Mask, set the hit bit only
     return
 row_check_clear
     movf    k, w                        ; Get the current bit mask for Port D
-    bsf	    w, 7                        ; Set most significant bit to on so we don't affect it (it's shift remember!)
+    bsf     w, 7                        ; Set most significant bit to on so we don't affect it (it's shift remember!)
     andwf   key_buff + KEY_COL, f       ; And the current columns with the mask, 0b11101111 for example
     movf    i, w
     comf    w
@@ -151,7 +148,7 @@ key_init
     movwf   TRISC
     movwf   TRISB
     clrf    TRISD
-    bsf	    TRISD, 7
+    bsf     TRISD, 7
     
     ; Clear initial output pins (by setting high)
     banksel PORTC
