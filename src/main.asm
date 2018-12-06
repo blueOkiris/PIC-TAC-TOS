@@ -93,7 +93,7 @@ check_each_column
     return
     
     rlf     k                           ; Shift mask (Don't forget to re-add 1 to the end)
-    incf
+    incf    k
     goto    check_each_column
     
 ; Description:
@@ -102,8 +102,10 @@ check_each_column
 check_each_row
     ; Button is active low, so first read in C and flip it to be active high
     movf    PORTC, w
-    comf    w                           ; Get 2's complement of w (invert and add 
-    incf    w
+    movwf   t
+    comf    t                           ; Get 2's complement of w (invert and add 
+    incf    t
+    movf    t, w
     
     ; Now check if current w is correct
     andwf   i, w                        ; Will check only current bit
@@ -118,18 +120,24 @@ check_each_row
     goto    check_each_row
 row_check_set
     movf    k, w                        ; Get the current bit mask for Port D
-    comf    w                           ; Invert to get something like 0b10010000 instead of 0b01101111
-    bsf     w, 7                        ; Set most significant bit to off so we don't affect it (it's shift remember!)
+    movwf   t
+    comf    t                           ; Invert to get something like 0b10010000 instead of 0b01101111
+    bsf     t, 7                        ; Set most significant bit to off so we don't affect it (it's shift remember!)
+    movf    t, w
     iorwf   key_buff + KEY_COL, f       ; Or the current columns with the mask, 0b00010000 for example
     movf    i, w
     iorwf   key_buff + KEY_ROW, f       ; Mask, set the hit bit only
     return
 row_check_clear
     movf    k, w                        ; Get the current bit mask for Port D
-    bsf     w, 7                        ; Set most significant bit to on so we don't affect it (it's shift remember!)
+    movwf   t
+    bsf     t, 7                        ; Set most significant bit to on so we don't affect it (it's shift remember!)
+    movf    t, w
     andwf   key_buff + KEY_COL, f       ; And the current columns with the mask, 0b11101111 for example
     movf    i, w
-    comf    w
+    movwf   t
+    comf    t
+    movf    t, w
     andwf   key_buff + KEY_ROW, f       ; Mask, clear the hit bit only
     return
 

@@ -1,4 +1,4 @@
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  1
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -7,10 +7,10 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00001 ; Author: Dylan Turner
                       00002 ; Filename: main.asm
                       00003 ; Description: The main overarching place for the program including:
-                      00004 ;                   * Entry point
-                      00005 ;                   * Port initialization
-                      00006 ;                   * System variable descriptions
-                      00007 
+                      00004 ;        * Entry point
+                      00005 ;        * Port initialization
+                      00006 ;        * System variable descriptions
+                      00007     
                       00008     list    p=16F887
                       00009     #include "p16f887.inc"
                       00001         LIST
@@ -23,141 +23,231 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       00810         LIST
-                      00010     
-                      00011     list        p=16F887
-                      00012     #include    "p16f887.inc"
-                      00811         LIST
-                      00812 
-                      00813 ;==========================================================================
-                      00814 ; Build date : Sep 19 2018
-                      00815 ;  MPASM PIC16F887 processor include
-                      00816 ; 
-                      00817 ;  (c) Copyright 1999-2018 Microchip Technology, All rights reserved
-                      00818 ;==========================================================================
-                      00819 
-Message[310]: Superseding current maximum RAM and RAM map.
-                      01620         LIST
-                      00013     ; PIC16F887 Configuration Bit Settings
-                      00014     ; CONFIG1
-                      00015     ; __config 0x20F5
-2007   20F5           00016      __CONFIG _CONFIG1, _FOSC_INTRC_CLKOUT & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _CPD_OFF & _
+                      00010     ; PIC16F887 Configuration Bit Settings
+                      00011     ; CONFIG1
+                      00012     ; __config 0x20F5
+2007   20F5           00013      __CONFIG _CONFIG1, _FOSC_INTRC_CLKOUT & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _CPD_OFF & _
                             BOREN_OFF & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
-                      00017     ; CONFIG2
-                      00018     ; __config 0x3EFF
-2008   3EFF           00019      __CONFIG _CONFIG2, _BOR4V_BOR21V & _WRT_OFF
-                      00020     
-                      00021     radix   dec
+                      00014     ; CONFIG2
+                      00015     ; __config 0x3EFF
+2008   3EFF           00016      __CONFIG _CONFIG2, _BOR4V_BOR21V & _WRT_OFF
+                      00017     
+                      00018     radix   dec
+                      00019     
+  00000000            00020 KEY_ROW     equ     0                   ; Which byte to of key_buff to store row data in
+  00000001            00021 KEY_COL     equ     1                   ; Which byte to store row and shift data in
                       00022     
-                      00023     udata   0x20                ; Register file locations for system variables
-                      00024     
-  00000000            00025 KEY_ROW     equ     0           ; Which byte to of key_buff to store row data in
-  00000001            00026 KEY_COL     equ     1           ; Which byte to store row and shift data in
-0020                  00027 key_buff    res     2
-                      00028     
-                      00029 RES_VECT    CODE    0x0000      ; Processor reset vector
-0000   2???           00030     goto    start
-                      00031     
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  2
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-                      00032 INT_VECT  CODE      0x0004      ; interrupt vector
-0004   2???           00033     goto    isr                 ; go to interrupt service routine
+                      00023     udata   0x20                        ; Register file locations for system variables
+                      00024 
+0020                  00025 key_buff    res     2
+0022                  00026 i           res     1                   ; small loop var
+0023                  00027 k           res     1                   ; outer loop var
+0024                  00028 m           res     2                   ; loop var for large numbers
+0026                  00029 n           res     2                   ; outer loop var for big numbers
+0028                  00030 t           res     1                   ; Second working directory
+                      00031 
+                      00032 RES_VECT    CODE    0x0000              ; Processor reset vector
+0000   2???           00033     goto    start
                       00034     
-                      00035 MAIN_PROG   CODE
-0000                  00036 start
-0000   2???           00037     call    key_init
-0001   2???           00038     call    output_init
-                      00039     
-0002   2???           00040     goto    sys_loop
-                      00041     
-                      00042 ; Description:
-                      00043 ; Interrupt functions etc.
-                      00044 ; Update: Dylan - create function
-0003                  00045 isr
-0003   3000           00046     movlw   0x00
-0004   008B           00047     movwf   INTCON              ; Disable other interrupts
-                      00048     
-                      00049     ; TODO: Read and update keyboard
-                      00050     ; call key_update -> move row into key_buff + KEY_ROW and move col into key_buff + KEY_COL
-                      00051     
-0005   3088           00052     movlw   b'10001000'         ; Enable keyboard interrupt
-0006   008B           00053     movwf   INTCON
-0007   0008           00054     return                      ; Highly suspicious. May not worlk!
-                      00055     
-                      00056 ; Description:
-                      00057 ; This is the main program loop where all other functions are called.
-                      00058 ; The program loops forever, reading input, processing, and displaying output
-                      00059 ; Essentially, it will call 1 functions, Interpret data, and loop
-                      00060 ; Update: Created function
-0008                  00061 sys_loop
-                      00062     ; Basic setup (will change/TODO)
-                      00063     ; call interpret
-0008   2???           00064     goto sys_loop
-                      00065 
-                      00066 ; Description:
-                      00067 ; This function sets up ports C and D for use with the button matrix keyboard
-                      00068 ; C is used for rows, bits 0-7 as input
-                      00069 ; D is used for columns, bits 0-7 as output
-                      00070 ; D is also for Shift button, bit 8 as input
-                      00071 ; B is used as an interrupt on bit 0 as output
-                      00072 ; Update: Added B interrupt logic
-0009                  00073 key_init
-                      00074     ; Set all of C to input and all but bit 7 of D to output
-0009   1683 1303      00075     banksel TRISC
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-000B   0187           00076     clrf    TRISC
-000C   30FF           00077     movlw   0xFF
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-000D   0087           00078     movwf   TRISC
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-000E   0086           00079     movwf   TRISB
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-000F   0188           00080     clrf    TRISD
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  3
+                      00035 INT_VECT    CODE    0x0004              ; interrupt vector
+0004   2???           00036     goto    isr                         ; go to interrupt service routine
+                      00037     
+                      00038 MAIN_PROG   CODE
+0000                  00039 start
+0000   2???           00040     call    key_init
+0001   2???           00041     call    output_init
+                      00042     
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
+0002   2???           00043     goto    sys_loop
+                      00044     
+                      00045 ; Description:
+                      00046 ; Interrupt functions etc.
+                      00047 ; Update: Dylan - added key_update
+0003                  00048 isr
+0003   3000           00049     movlw   0x00
+0004   008B           00050     movwf   INTCON                      ; Disable other interrupts
+                      00051     
+0005   2???           00052     call    key_update
+                      00053     
+0006   3088           00054     movlw   b'10001000'                 ; Enable keyboard interrupt
+0007   008B           00055     movwf   INTCON
+0008   0008           00056     return                              ; Highly suspicious. May not worlk!
+                      00057     
+                      00058 ; Description:
+                      00059 ; This is the main program loop where all other functions are called.
+                      00060 ; The program loops forever, reading input, processing, and displaying output
+                      00061 ; Essentially, it will call 1 functions, Interpret data, and loop
+                      00062 ; Update: Dylan - Created function
+0009                  00063 sys_loop
+                      00064     ; Basic setup (will change/TODO)
+                      00065     ; call interpret
+0009   2???           00066     goto sys_loop
+                      00067     
+                      00068 ; Description:
+                      00069 ; Update key data from the builtin matrix keyboard (as opposed to an external one)
+                      00070 ; Update: Dylan - Implemented double function
+000A                  00071 key_update
+                      00072     ; See if shift is pressed
+000A   1B88           00073     btfsc   PORTD, 7                    ; Is the button pressed? (active low)
+000B   1780           00074     bsf     key_buff + KEY_COL, 7       ; If so, set the column register to store shift @ b7
+                      00075     
+000C   3077           00076     movlw   0x77                        ; 0b0 1111110
+000D   00??           00077     movwf   k
+000E   2???           00078     call check_each_column
+000F   0008           00079     return
+                      00080     
+                      00081 ; Description:
+                      00082 ; Small loop to iterate through each column of the keyboard
+                      00083 ; Update: Dylan - Created
+0010                  00084 check_each_column
+                      00085     ; Check column 0 for each row
+Message[305]: Using default destination of 1 (file).
+0010   08??           00086     movf    k                           ; move the mask into k
+0011   0088           00087     movwf   PORTD
+0012   3000           00088     movlw   0                           ; Set i to 1 to start (it will be shifted not incremented)
+0013   00??           00089     movwf   i
+0014   2???           00090     call check_each_row 
+                      00091     
+0015   1B00           00092     btfsc   k, 6                        ; return right before you would shift to the 7th bit (bc we don'
+                            t want to do that!)
+0016   0008           00093     return
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00094     
+Message[305]: Using default destination of 1 (file).
+0017   0D??           00095     rlf     k                           ; Shift mask (Don't forget to re-add 1 to the end)
+Message[305]: Using default destination of 1 (file).
+0018   0A??           00096     incf    k
+0019   2???           00097     goto    check_each_column
+                      00098     
+                      00099 ; Description:
+                      00100 ; Small loop to iterate through each row in the keyboard given a column from above
+                      00101 ; Update: Dylan - Created
+001A                  00102 check_each_row
+                      00103     ; Button is active low, so first read in C and flip it to be active high
+001A   0807           00104     movf    PORTC, w
+001B   00??           00105     movwf   t
+Message[305]: Using default destination of 1 (file).
+001C   09??           00106     comf    t                           ; Get 2's complement of w (invert and add 
+Message[305]: Using default destination of 1 (file).
+001D   0A??           00107     incf    t
+001E   08??           00108     movf    t, w
+                      00109     
+                      00110     ; Now check if current w is correct
+001F   05??           00111     andwf   i, w                        ; Will check only current bit
+0020   1903           00112     btfsc   STATUS, Z                   ; Check if pressed (pressed => != 0 => Z = 0)
+0021   2???           00113     call    row_check_set
+0022   1D03           00114     btfss   STATUS, Z
+0023   2???           00115     call    row_check_clear
+                      00116     
+Message[305]: Using default destination of 1 (file).
+0024   0D??           00117     rlf     i                           ; Shift i to next bit
+0025   1F80           00118     btfss   i, 7                        ; When we get to the 8th row, i is 7th bit, stop
+0026   0008           00119     return
+0027   2???           00120     goto    check_each_row
+0028                  00121 row_check_set
+0028   08??           00122     movf    k, w                        ; Get the current bit mask for Port D
+0029   00??           00123     movwf   t
+Message[305]: Using default destination of 1 (file).
+002A   09??           00124     comf    t                           ; Invert to get something like 0b10010000 instead of 0b01101111
+002B   1780           00125     bsf     t, 7                        ; Set most significant bit to off so we don't affect it (it's sh
+                            ift remember!)
+002C   08??           00126     movf    t, w
+002D   04??           00127     iorwf   key_buff + KEY_COL, f       ; Or the current columns with the mask, 0b00010000 for example
+002E   08??           00128     movf    i, w
+002F   04??           00129     iorwf   key_buff + KEY_ROW, f       ; Mask, set the hit bit only
+0030   0008           00130     return
+0031                  00131 row_check_clear
+0031   08??           00132     movf    k, w                        ; Get the current bit mask for Port D
+0032   00??           00133     movwf   t
+0033   1780           00134     bsf     t, 7                        ; Set most significant bit to on so we don't affect it (it's shi
+                            ft remember!)
+0034   08??           00135     movf    t, w
+0035   05??           00136     andwf   key_buff + KEY_COL, f       ; And the current columns with the mask, 0b11101111 for example
+0036   08??           00137     movf    i, w
+0037   00??           00138     movwf   t
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Message[305]: Using default destination of 1 (file).
+0038   09??           00139     comf    t
+0039   08??           00140     movf    t, w
+003A   05??           00141     andwf   key_buff + KEY_ROW, f       ; Mask, clear the hit bit only
+003B   0008           00142     return
+                      00143 
+                      00144 ; Description:
+                      00145 ; This function sets up ports C and D for use with the button matrix keyboard
+                      00146 ; C is used for rows, bits 0-7 as input
+                      00147 ; D is used for columns, bits 0-7 as output
+                      00148 ; D is also for Shift button, bit 8 as input
+                      00149 ; B is used as an interrupt on bit 0 as output
+                      00150 ; Update: Dylan - Added B interrupt logic
+003C                  00151 key_init
+                      00152     ; Set all of C to input and all but bit 7 of D to output
+003C   1683 1303      00153     banksel TRISC
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0010   1788           00081     bsf     TRISD, 7
-                      00082     
-                      00083     ; Clear initial output pins (by setting high)
-0011   1283 1303      00084     banksel PORTC
-0013   307F           00085     movlw   0x7F                ; Don't set last bit! (MSB)
-0014   0088           00086     movwf   PORTD
-0015   0187           00087     clrf    PORTC
-                      00088     
-                      00089     ; Setup the keyboard interrupt bit
-0016   3088           00090     movlw   b'10001000'
-0017   008B           00091     movwf   INTCON              ; Enable B0 interrupt
-                      00092     
-0018   0008           00093     return
-                      00094 
-                      00095 ; Description:
-                      00096 ; Setup the outputs of the system: the LCD and the External Memory
-                      00097 ; This is first 3 bits of Port E where
-                      00098 ; bit 0 -> Serial out for LCD (Output)
-                      00099 ; bit 1 -> I2C memory Clk (Output)
-                      00100 ; bit 3 -> I2C data (In & Out)
-                      00101 ; Update: Initial creation
-0019                  00102 output_init
-                      00103     ; Setup input & output (to start all as output)
-0019   1683 1303      00104     banksel TRISE
+003E   0187           00154     clrf    TRISC
+003F   30FF           00155     movlw   0xFF
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-001B   0189           00105     clrf    TRISE
-                      00106     
-                      00107     ; Clear to start
-001C   1283 1303      00108     banksel PORTE
-001E   0189           00109     clrf    PORTE
-                      00110     
-001F   0008           00111     return
-                      00112     
-20F5 3EFF             00113     end
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  4
+0040   0087           00156     movwf   TRISC
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0041   0086           00157     movwf   TRISB
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0042   0188           00158     clrf    TRISD
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0043   1788           00159     bsf     TRISD, 7
+                      00160     
+                      00161     ; Clear initial output pins (by setting high)
+0044   1283 1303      00162     banksel PORTC
+0046   307F           00163     movlw   0x7F                        ; Don't set last bit! (MSB)
+0047   0088           00164     movwf   PORTD
+0048   0187           00165     clrf    PORTC
+                      00166     
+                      00167     ; Setup the keyboard interrupt bit
+0049   3088           00168     movlw   b'10001000'
+004A   008B           00169     movwf   INTCON                      ; Enable B0 interrupt
+                      00170     
+004B   0008           00171     return
+                      00172 
+                      00173 ; Description:
+                      00174 ; Setup the outputs of the system: the LCD and the External Memory
+                      00175 ; This is first 3 bits of Port E where
+                      00176 ; bit 0 -> Serial out for LCD (Output)
+                      00177 ; bit 1 -> I2C memory Clk (Output)
+                      00178 ; bit 3 -> I2C data (In & Out)
+                      00179 ; Update: Dylan - Initial creation
+004C                  00180 output_init
+                      00181     ; Setup input & output (to start all as output)
+004C   1683 1303      00182     banksel TRISE
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+004E   0189           00183     clrf    TRISE
+                      00184     
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00185     ; Clear to start
+004F   1283 1303      00186     banksel PORTE
+0051   0189           00187     clrf    PORTE
+                      00188     
+0052   0008           00189     return
+                      00190     
+20F5 3EFF             00191     end
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  6
 
 
 SYMBOL TABLE
@@ -216,7 +306,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  5
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  7
 
 
 SYMBOL TABLE
@@ -275,7 +365,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  6
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  8
 
 
 SYMBOL TABLE
@@ -334,7 +424,7 @@ INTF                              00000001
 IOCB                              00000096
 IOCB0                             00000000
 IOCB1                             00000001
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  7
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE  9
 
 
 SYMBOL TABLE
@@ -393,7 +483,7 @@ PCLATH                            0000000A
 PCON                              0000008E
 PDC0                              00000000
 PDC1                              00000001
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  8
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 10
 
 
 SYMBOL TABLE
@@ -452,7 +542,7 @@ RC0                               00000000
 RC1                               00000001
 RC2                               00000002
 RC3                               00000003
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE  9
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 11
 
 
 SYMBOL TABLE
@@ -511,7 +601,7 @@ SSPBUF                            00000013
 SSPCON                            00000014
 SSPCON2                           00000091
 SSPEN                             00000005
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE 10
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 12
 
 
 SYMBOL TABLE
@@ -570,7 +660,7 @@ TOUTPS1                           00000004
 TOUTPS2                           00000005
 TOUTPS3                           00000006
 TRISA                             00000085
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE 11
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 13
 
 
 SYMBOL TABLE
@@ -629,7 +719,7 @@ TXD8                              00000000
 TXEN                              00000005
 TXIE                              00000004
 TXIF                              00000004
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE 12
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 14
 
 
 SYMBOL TABLE
@@ -688,7 +778,7 @@ _BOR_SBODEN                       00003DFF
 _CONFIG1                          00002007
 _CONFIG2                          00002008
 _CPD_OFF                          00003FFF
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE 13
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 15
 
 
 SYMBOL TABLE
@@ -743,21 +833,31 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
+check_each_column                 00000010
+check_each_row                    0000001A
+i                                 00000022
 isr                               00000003
-key_buff                          00000020
-key_init                          00000009
-output_init                       00000019
-MPASM 5.82                          MAIN.ASM   12-5-2018  0:32:54         PAGE 14
+MPASM 5.82                          MAIN.ASM   12-5-2018  19:00:21         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+k                                 00000023
+key_buff                          00000020
+key_init                          0000003C
+key_update                        0000000A
+m                                 00000024
+n                                 00000026
+output_init                       0000004C
+row_check_clear                   00000031
+row_check_set                     00000028
 start                             00000000
-sys_loop                          00000008
+sys_loop                          00000009
+t                                 00000028
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :     7 reported,     0 suppressed
+Messages :    14 reported,     0 suppressed
 
 
