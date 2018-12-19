@@ -1,4 +1,4 @@
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  1
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0000   2???           00040     call    key_init
 0001   2???           00041     call    output_init
                       00042     
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  2
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ Message[305]: Using default destination of 1 (file).
 0015   1B00           00092     btfsc   k, 6                        ; return right before you would shift to the 7th bit (bc we don'
                             t want to do that!)
 0016   0008           00093     return
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  3
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -175,7 +175,7 @@ Message[305]: Using default destination of 1 (file).
 0035   05??           00136     andwf   key_buff + KEY_COL, f       ; And the current columns with the mask, 0b11101111 for example
 0036   08??           00137     movf    i, w
 0037   00??           00138     movwf   t
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  4
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -234,7 +234,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 004E   0189           00183     clrf    TRISE
                       00184     
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  5
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -247,7 +247,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0052   0008           00189     return
                       00190     
 20F5 3EFF             00191     end
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  6
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  6
 
 
 SYMBOL TABLE
@@ -306,7 +306,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  7
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  7
 
 
 SYMBOL TABLE
@@ -365,7 +365,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  8
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  8
 
 
 SYMBOL TABLE
@@ -424,7 +424,7 @@ INTF                              00000001
 IOCB                              00000096
 IOCB0                             00000000
 IOCB1                             00000001
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE  9
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE  9
 
 
 SYMBOL TABLE
@@ -483,7 +483,7 @@ PCLATH                            0000000A
 PCON                              0000008E
 PDC0                              00000000
 PDC1                              00000001
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 10
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 10
 
 
 SYMBOL TABLE
@@ -542,7 +542,7 @@ RC0                               00000000
 RC1                               00000001
 RC2                               00000002
 RC3                               00000003
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 11
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 11
 
 
 SYMBOL TABLE
@@ -601,7 +601,7 @@ SSPBUF                            00000013
 SSPCON                            00000014
 SSPCON2                           00000091
 SSPEN                             00000005
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 12
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 12
 
 
 SYMBOL TABLE
@@ -660,7 +660,7 @@ TOUTPS1                           00000004
 TOUTPS2                           00000005
 TOUTPS3                           00000006
 TRISA                             00000085
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 13
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 13
 
 
 SYMBOL TABLE
@@ -719,7 +719,7 @@ TXD8                              00000000
 TXEN                              00000005
 TXIE                              00000004
 TXIF                              00000004
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 14
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 14
 
 
 SYMBOL TABLE
@@ -778,7 +778,7 @@ _BOR_SBODEN                       00003DFF
 _CONFIG1                          00002007
 _CONFIG2                          00002008
 _CPD_OFF                          00003FFF
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 15
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 15
 
 
 SYMBOL TABLE
@@ -833,16 +833,18 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
+__DEBUG                           
+__MPLAB_DEBUGGER_PK3              1
 check_each_column                 00000010
 check_each_row                    0000001A
-i                                 00000022
-isr                               00000003
-MPASM 5.82                          MAIN.ASM   12-13-2018  3:42:36         PAGE 16
+MPASM 5.82                          MAIN.ASM   12-13-2018  3:44:17         PAGE 16
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+i                                 00000022
+isr                               00000003
 k                                 00000023
 key_buff                          00000020
 key_init                          0000003C

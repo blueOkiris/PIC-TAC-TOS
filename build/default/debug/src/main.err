@@ -1,0 +1,14 @@
+Message[305] SRC\MAIN.ASM 86 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 95 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 96 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 106 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 107 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 117 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 124 : Using default destination of 1 (file).
+Message[305] SRC\MAIN.ASM 139 : Using default destination of 1 (file).
+Message[302] SRC\MAIN.ASM 154 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 156 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 157 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 158 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 159 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] SRC\MAIN.ASM 183 : Register in operand not in bank 0.  Ensure that bank bits are correct.
