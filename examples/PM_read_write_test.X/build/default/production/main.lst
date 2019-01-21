@@ -1,4 +1,4 @@
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  1
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -6,13 +6,14 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 
                       00001 ; ***** Program Memory (EEPROM) Read-Write Test ****
                       00002 ; Nicklas Carpenter
-                      00003 ; December 6, 2018
-                      00004 ;
-                      00005 ; This is a simple program that attempts to read from and write to the program
-                      00006 ; memory of the PIC16F887. It's purpose is to test the extent and ability of
-                      00007 ; the programmer to read instructions and insert them at runtime.
-                      00008 
-                      00009 #include "p16f887.inc"
+                      00003 ; Created: December 6, 2018
+                      00004 ; Updated: January 10, 2019
+                      00005 ;
+                      00006 ; This is a simple program that attempts to read from and write to the program
+                      00007 ; memory of the PIC16F887. It's purpose is to test the extent and ability of
+                      00008 ; the programmer to read instructions and insert them at runtime.
+                      00009 
+                      00010 #include "p16f887.inc"
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
@@ -23,196 +24,209 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       00810         LIST
-                      00010 
-                      00011 ; CONFIG1
-                      00012 ; __config 0xE0D4
-2007   20D4           00013  __CONFIG _CONFIG1, _FOSC_INTRC_NOCLKOUT & _WDTE_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _CPD_OFF & _B
+                      00011 
+                      00012 ; CONFIG1
+                      00013 ; __config 0xE0D4
+2007   20D4           00014  __CONFIG _CONFIG1, _FOSC_INTRC_NOCLKOUT & _WDTE_OFF & _PWRTE_OFF & _MCLRE_OFF & _CP_OFF & _CPD_OFF & _B
                             OREN_OFF & _IESO_OFF & _FCMEN_OFF & _LVP_OFF
-                      00014 ; CONFIG2
-                      00015 ; __config 0xFEFF
-2008   3EFF           00016  __CONFIG _CONFIG2, _BOR4V_BOR21V & _WRT_OFF
-                      00017 
+                      00015 ; CONFIG2
+                      00016 ; __config 0xFEFF
+2008   3EFF           00017  __CONFIG _CONFIG2, _BOR4V_BOR21V & _WRT_OFF
                       00018 
-  000000FF            00019 TEST_LITERAL    equ 0xFF    ; Test literal so movlw command is clearly visible
-  00000000            00020 TEST_INSTR_H    equ 0x00    ; High byte of instruction to read from
-  00000008            00021 TEST_INSTR_L    equ 0x08    ; Low byte of instruction to read from
-                      00022 
-                      00023 ; The instruction we are writing is "movlw 0x00".
-  00000030            00024 WRITE_INSTR_H   equ 0x30    ; High byte of instruction to write  
-  0000000F            00025 WRITE_INSTR_L   equ 0x0F    ; Low byte of instruction to write     
-                      00026 
-                      00027 bank_0  udata   0x20
-0020                  00028 inst_rslt   res 1       ; The result of the operation we read and change
-                      00029     
-                      00030 ; We store instructions in bank 3 to prevent continuous switching during write
-                      00031 bank_3  udata   0x110            
-0110                  00032 cur_addr    res 1       ; The offset from the instruction we are writing.
-0111                  00033 inst_l res 1   ; The low byte of the instruction read
-0112                  00034 inst_h  res 1   ; The high byte of the instruction read 
-                      00035     
-                      00036 
-                      00037     radix dec
-                      00038 RST_VECT    code    0x0000
-0000   2???           00039     goto    start
-                      00040 
-                      00041 MAIN_PROG   code    0x0005
-0005                  00042 start
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  2
+                      00019 
+  000000FF            00020 TEST_LITERAL    equ 0xFF    ; Test literal so movlw command is clearly visible
+  00000000            00021 INST_ADDR_H     equ 0x00    ; High byte of instruction to read from / write to
+  00000008            00022 INST_ADDR_L     equ 0x08    ; Low byte of instruction to read from / write to
+                      00023 
+  0000000F            00024 END_ADDR_L  equ 0x0F    ; The last memory address to write to
+                      00025 
+                      00026 ; The instruction we are writing is "movlw 0x0F".
+  00000030            00027 INSTR_H     equ 0x30    ; High byte of instruction to write  
+  0000000F            00028 INSTR_L     equ 0x0F    ; Low byte of instruction to write
+                      00029      
+                      00030     
+                      00031 ; We store instructions in bank 3 to prevent continuous switching during write
+                      00032 bank_2      udata   0x110                
+0110                  00033 inst_l      res 1   ; The low byte of the instruction read
+0111                  00034 inst_h      res 1   ; The high byte of the instruction read
+0112                  00035 inst_rslt   res 1       ; The result of the operation we read and change 
+                      00036     
+                      00037 ; I don't know why I specify this, since nine out of ten times I use hexadecimal
+                      00038 ; anyway. I guess I like to be explicit with my hexadecimal (i.e. including the
+                      00039 ; '0x' prefix), but I would rather not include a prefix if and when I use 
+                      00040 ; decimal.
+                      00041     radix dec
+                      00042 
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0005   2???           00043     call    pm_write
-0006                  00044 end_loop
-0006   2???           00045     goto    end_loop
-                      00046 
-0007                  00047 test_sequence
-0007   01??           00048     clrf    inst_rslt
-                      00049     ; The next instruction is addressed at 0x008 so we can write to it.
-                      00050     ; In general it seems you can only write to addresses with zeroes in the 
-                      00051     ; least significant bit.
-0008   30FF           00052     movlw   TEST_LITERAL    ; This is the instruction we want to read or change.
-0009   00??           00053     movwf   inst_rslt
-000A   0008           00054     return
-                      00055 
-                      00056 ;   ****  pm_read ****
-                      00057 ;   Read the instruction we wrote to the specified address 
-                      00058 ;   We skip a few addresses between test_sequence and this function to ensure
-                      00059 ;   this function is not overwriten by pm_write
-                      00060 SECT_2  code    0x0010
-0010                  00061 pm_read         
-                      00062     ; **** Initiating the read from program memory
-0010   1283 1703      00063     banksel EEADR   ; Select bank to specify where to read from in PM
-0012   3000           00064     movlw   TEST_INSTR_H
+                      00043 MAIN_PROG    code    0x0000
+0000                  00044 start
+                      00045     ; Read the line as it's initially written.
+0000   2???           00046     call    pm_read
+                      00047     ; Move the original literal to the specified register
+0001   2???           00048     call    test_sequence
+                      00049     ; Modify 'test_sequence to move a new, different literal to the specified
+                      00050     ; register
+0002   2???           00051     call    pm_write
+                      00052     ; Read the same lines. Basically, we're verifying our changes to program 
+                      00053     ; memory were actually made
+0003   2???           00054     call    pm_read
+                      00055     ; Run the updated function. Icing on the cake.
+0004   2???           00056     call    test_sequence
+0005                  00057 end_loop
+0005   2???           00058     goto    end_loop
+                      00059 
+                      00060 ; Jump so we write to the correct location in program memory. We leave some
+                      00061 ; empyt spaces, but that shouldn't matter for our purposes. Additionally, we 
+                      00062 ; overwrite the interrupt vector. This is also okay, since this program 
+                      00063 ; doesn't use any interrupts. 
+                      00064 USER_SPACE  code    0x0007
+0007                  00065 test_sequence
+0007   01??           00066     clrf    inst_rslt
+                      00067     ; The next instruction is addressed at 0x008 so we can write to it.
+0008   30FF           00068     movlw   TEST_LITERAL    ; This is the instruction we want to read or change.
+0009   00??           00069     movwf   inst_rslt
+000A   0008           00070     return
+                      00071 
+                      00072 ; We start the definition for our other fucnction starting at the next write
+                      00073 ; block (program memory address 16). Every write to program memory has to 
+                      00074 ; contain exactly 8 instructions, and each write has to start at an address
+                      00075 ; whose least three significant bytes are 0 (i.e. 0bxxxxxxxxxxxxx000). 
+                      00076 KERNAL_SPACE    code    0x0010
+                      00077 
+                      00078 ; ****  pm_read ****
+                      00079 ; Read the instruction we wrote to the specified address
+0010                  00080 pm_read         
+                      00081     ; **** Initiating the read from program memory
+0010   1283 1703      00082     banksel EEADR   ; Select bank to specify where to read from in PM
+0012   3000           00083     movlw   INST_ADDR_H
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0013   008F           00065     movwf   EEADRH  ; High byte of program memory to read
-0014   3008           00066     movlw   TEST_INSTR_L
+0013   008F           00084     movwf   EEADRH  ; High byte of program memory to read
+0014   3008           00085     movlw   INST_ADDR_L
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0015   008D           00067     movwf   EEADR   ; Low byte or program memory to read
-0016   1683 1703      00068     banksel EECON1  ; Select bank to specify when to read from PM
+0015   008D           00086     movwf   EEADR   ; Low byte or program memory to read
+0016   1683 1703      00087     banksel EECON1  ; Select bank to specify when to read from PM
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0018   178C           00069     bsf     EECON1, EEPGD   ; Read from program memory as opposed to data memory
+0018   178C           00088     bsf     EECON1, EEPGD   ; Read from program memory as opposed to data memory
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0019   140C           00070     bsf     EECON1, RD  ; Initiate a read from program memory
-                      00071     
-                      00072     ; It takes two instruction cycles to read from program memory.
-                      00073     ; We can do something during the first instruction, but the second
-                      00074     ; instuction is ignored. We have nothing better to do here, so we'll make
-                      00075     ; both instructions No-ops.
-001A   0000           00076     nop
-001B   0000           00077     nop
-                      00078     
-                      00079     ; *** Reading from program memory
-001C   1283 1703      00080     banksel EEDAT   ; Select the bank where our PM read was stored
-                      00081     
-                      00082     ; Clear our instruction registers.
-001E   01??           00083     clrf    inst_h
-001F   01??           00084     clrf    inst_l
-                      00085 
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0020   080E           00086     movf    EEDATH,w
-0021   00??           00087     movwf   inst_h  ; Store the high byte of the instruction
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0022   080C           00088     movf    EEDAT,w
-0023   00??           00089     movwf   inst_l  ; Store the low byte of the instruction
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  3
+0019   140C           00089     bsf     EECON1, RD  ; Initiate a read from program memory
+                      00090     
+                      00091     ; It takes two instruction cycles to read from program memory.
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0024   0008           00090     return
-                      00091 
-                      00092 ; **** pm_write ****
-                      00093 ; Writes an instruction to program memory
-0025                  00094 pm_write
-                      00095     ; **** Load the instruction into data and select its address
-0025   1283 1703      00096     banksel EEADR
-0027   3000           00097     movlw   TEST_INSTR_H    
+                      00092     ; We can do something during the first instruction, but the second
+                      00093     ; instuction is ignored. We have nothing better to do here, so we'll make
+                      00094     ; both instructions No-ops.
+001A   0000           00095     nop
+001B   0000           00096     nop
+                      00097     
+                      00098     ; *** Reading from program memory
+001C   1283 1703      00099     banksel EEDAT   ; Select the bank where our PM read was stored
+                      00100     
+                      00101     ; Clear our instruction registers.
+001E   01??           00102     clrf    inst_h
+001F   01??           00103     clrf    inst_l
+                      00104 
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0028   008F           00098     movwf   EEADRH          ; Load high byte of initial instruction address.
-0029   3008           00099     movlw   TEST_INSTR_L
+0020   080E           00105     movf    EEDATH,w
+0021   00??           00106     movwf   inst_h  ; Store the high byte of the instruction
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-002A   008D           00100     movwf   EEADR           ; Load low byte of initial instruction address
-002B   3030           00101     movlw   WRITE_INSTR_H  
+0022   080C           00107     movf    EEDAT,w
+0023   00??           00108     movwf   inst_l  ; Store the low byte of the instruction
+0024   0008           00109     return
+                      00110 
+                      00111 ; **** pm_write ****
+                      00112 ; Writes an instruction to program memory. This can be made more efficient when
+                      00113 ; generalized. For now, it serves to demonstrate the basic concept.
+0025                  00114 pm_write
+                      00115     ; **** Load the test instruction into data and select its address.
+0025   1283 1703      00116     banksel EEADR
+0027   3000           00117     movlw   INST_ADDR_H    
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-002C   008F           00102     movwf   EEADRH          ; Load high byte of instruction into buffer
-002D   300F           00103     movlw   WRITE_INSTR_L   
+0028   008F           00118     movwf   EEADRH          ; Load high byte of initial instruction address.
+0029   3008           00119     movlw   INST_ADDR_L
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-002E   008D           00104     movwf   EEADR           ; Load low byte of instruction into buffer
-002F   3008           00105     movlw   TEST_INSTR_L
-0030   00??           00106     movwf   cur_addr        
-0031   0A??           00107     incf    cur_addr, f     ; Set offset to one so we can write to next address
-                      00108 
-                      00109 ; **** Write EEDAT and EEDATH
-0032                  00110 write
-                      00111     ; Preform the write operation
-0032   1683 1703      00112     banksel EECON1          ; Select the program memory read configureation
+002A   008D           00120     movwf   EEADR
+002B   3030           00121     movlw   INSTR_H  
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0034   178C           00113     bsf     EECON1, EEPGD   ; Write to program data instead of EEPROM
+002C   008E           00122     movwf   EEDATH          ; Load high byte of instruction into buffer
+002D   300F           00123     movlw   INSTR_L   
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0035   150C           00114     bsf     EECON1, WREN    ; Enable writing to program memory
-                      00115 
-                      00116     ; Loading the required write sequence 0x55AA
-0036   3055           00117     movlw   0x55
+002E   008C           00124     movwf   EEDAT           ; Load low byte of instruction into buffer
+002F   3008           00125     movlw   INST_ADDR_L
+                      00126 
+                      00127 ; **** Write to EEDAT and EEDATH
+0030                  00128 write
+                      00129     ; Check to ensure  we are not writing out of bounds: see if the address to
+                      00130     ; be loaded into EADDR is past the end address. If we are in bounds, 
+                      00131     ; initiate the write, otherwise we are done.
+0030   1283           00132     bcf     STATUS, RP0
+0031   3010           00133     movlw   END_ADDR_L + 1 
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0037   008D           00118     movwf   EECON2          ; Load the first byte of the write sequence
-0038   30AA           00119     movlw   0xAA
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0039   008D           00120     movwf   EECON2          ; Load the second byte of the write sequence
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003A   148C           00121     bsf     EECON1, WR      ; Initiate the write
-                      00122 
-                      00123     ; It takes two instruction cycles to write to memory
-003B   0000           00124     nop
-003C   0000           00125     nop
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003D   110C           00126     bcf     EECON1, WREN    ; Disable writing to program memory (for safety)
-                      00127     
-003E   1283 1703      00128     banksel EEADR
-0040   3000           00129     movlw   0x00            
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0041   008F           00130     movwf   EEADRH
-0042   08??           00131     movf    cur_addr, w
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  4
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0043   008D           00132     movwf   EEADR
-Message[305]: Using default destination of 1 (file).
-0044   0A??           00133     incf    cur_addr
-0045   1683 1703      00134     banksel EECON1  ; Select bank to specify when to read from PM
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0047   178C           00135     bsf     EECON1, EEPGD   ; Read from program memory as opposed to data memory
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0048   140C           00136     bsf     EECON1, RD  ; Initiate a read from program memory
+0032   020D           00134     subwf   EEADR, w
+0033   1903           00135     btfsc   STATUS, Z
+0034   0008           00136     return
                       00137     
-                      00138     ; It takes two instruction cycles to read from program memory.
-                      00139     ; We can do something during the first instruction, but the second
-                      00140     ; instuction is ignored. We have nothing better to do here, so we'll make
-                      00141     ; both instructions No-ops.
-0049   0000           00142     nop
-004A   0000           00143     nop
-                      00144     
-004B   ???? ????      00145     banksel cur_addr
-                      00146     ; Check to see if we should stop writing to the buffer
-004D   3010           00147     movlw   0x10
-004E   02??           00148     subwf   cur_addr,w
-004F   1D03           00149     btfss   STATUS,Z
-0050   2???           00150     goto    write
-                      00151     
-                      00152     ; Test our changes.
-0051   2???           00153     call    pm_read
-0052   ???? ????      00154     banksel inst_rslt
-0054   2???           00155     call    test_sequence
-0055   0008           00156     return
-                      00157     
-20D4 3EFF             00158     end
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  5
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00138     
+                      00139     ; Preform the write operation
+0035   1683 1703      00140     banksel EECON1          ; Select the program memory read configureation
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0037   178C           00141     bsf     EECON1, EEPGD   ; Write to program data instead of EEPROM
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0038   150C           00142     bsf     EECON1, WREN    ; Enable writing to program memory
+                      00143 
+                      00144     ; Loading the required write sequence 0x55AA
+0039   3055           00145     movlw   0x55
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003A   008D           00146     movwf   EECON2          ; Load the first byte of the write sequence
+003B   30AA           00147     movlw   0xAA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003C   008D           00148     movwf   EECON2          ; Load the second byte of the write sequence
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003D   148C           00149     bsf     EECON1, WR      ; Initiate the write
+                      00150 
+                      00151     ; It takes two instruction cycles to write to memory
+003E   0000           00152     nop
+003F   0000           00153     nop
+                      00154 
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0040   110C           00155     bcf     EECON1, WREN    ; Disable writing to program memory (for safety)
+                      00156     
+                      00157     ; ** Initialize the next write cycle
+0041   1283 1703      00158     banksel EEADR
+0043   3000           00159     movlw   INST_ADDR_H             
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0044   008F           00160     movwf   EEADRH
+Message[305]: Using default destination of 1 (file).
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0045   0A8D           00161     incf    EEADR   ; Move to the next instruction
+                      00162 
+0046   1683 1703      00163     banksel EECON1          ; Select bank to specify when to read from PM
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0048   178C           00164     bsf     EECON1, EEPGD   ; Read from program memory as opposed to data memory
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0049   140C           00165     bsf     EECON1, RD      ; Initiate a read from program memory
+                      00166     
+                      00167     ; It takes two instruction cycles to read from program memory.
+                      00168     ; We can preform a task during the first one, but the second one is 
+004A   2???           00169     goto write
+                      00170     
+20D4 3EFF             00171     end
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  5
 
 
 SYMBOL TABLE
@@ -271,7 +285,7 @@ BRG6                              00000006
 BRG7                              00000007
 BRG8                              00000000
 BRG9                              00000001
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  6
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  6
 
 
 SYMBOL TABLE
@@ -330,7 +344,7 @@ CHS0                              00000002
 CHS1                              00000003
 CHS2                              00000004
 CHS3                              00000005
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  7
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  7
 
 
 SYMBOL TABLE
@@ -367,6 +381,7 @@ EEDATH                            0000010E
 EEIE                              00000004
 EEIF                              00000004
 EEPGD                             00000007
+END_ADDR_L                        0000000F
 F                                 00000001
 FERR                              00000002
 FSR                               00000004
@@ -382,19 +397,23 @@ I2C_READ                          00000002
 I2C_START                         00000003
 I2C_STOP                          00000004
 INDF                              00000000
+INSTR_H                           00000030
+INSTR_L                           0000000F
+INST_ADDR_H                       00000000
+INST_ADDR_L                       00000008
 INTCON                            0000000B
 INTE                              00000004
-INTEDG                            00000006
-INTF                              00000001
-IOCB                              00000096
-IOCB0                             00000000
-IOCB1                             00000001
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  8
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  8
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+INTEDG                            00000006
+INTF                              00000001
+IOCB                              00000096
+IOCB0                             00000000
+IOCB1                             00000001
 IOCB2                             00000002
 IOCB3                             00000003
 IOCB4                             00000004
@@ -443,17 +462,17 @@ P1M0                              00000006
 P1M1                              00000007
 PCL                               00000002
 PCLATH                            0000000A
-PCON                              0000008E
-PDC0                              00000000
-PDC1                              00000001
-PDC2                              00000002
-PDC3                              00000003
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE  9
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE  9
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PCON                              0000008E
+PDC0                              00000000
+PDC1                              00000001
+PDC2                              00000002
+PDC3                              00000003
 PDC4                              00000004
 PDC5                              00000005
 PDC6                              00000006
@@ -502,17 +521,17 @@ RB7                               00000007
 RBIE                              00000003
 RBIF                              00000000
 RC0                               00000000
-RC1                               00000001
-RC2                               00000002
-RC3                               00000003
-RC4                               00000004
-RC5                               00000005
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 10
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 10
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
 RC6                               00000006
 RC7                               00000007
 RC8_9                             00000006
@@ -561,17 +580,17 @@ SRCON                             00000185
 SREN                              00000005
 SSPADD                            00000093
 SSPBUF                            00000013
-SSPCON                            00000014
-SSPCON2                           00000091
-SSPEN                             00000005
-SSPIE                             00000003
-SSPIF                             00000003
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 11
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 11
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
 SSPM2                             00000002
@@ -603,8 +622,6 @@ T1SYNC                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
 T2CON                             00000012
-TEST_INSTR_H                      00000000
-TEST_INSTR_L                      00000008
 TEST_LITERAL                      000000FF
 TMR0                              00000001
 TMR0IE                            00000005
@@ -622,15 +639,15 @@ TMR2IE                            00000001
 TMR2IF                            00000001
 TMR2ON                            00000002
 TOUTPS0                           00000003
-TOUTPS1                           00000004
-TOUTPS2                           00000005
-TOUTPS3                           00000006
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 12
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 12
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
 TRISA                             00000085
 TRISA0                            00000000
 TRISA1                            00000001
@@ -681,15 +698,15 @@ TUN4                              00000004
 TX8_9                             00000006
 TX9                               00000006
 TX9D                              00000000
-TXD8                              00000000
-TXEN                              00000005
-TXIE                              00000004
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 13
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 13
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
 TXIF                              00000004
 TXREG                             00000019
 TXSTA                             00000098
@@ -727,8 +744,6 @@ WPUB7                             00000007
 WR                                00000001
 WREN                              00000002
 WRERR                             00000003
-WRITE_INSTR_H                     00000030
-WRITE_INSTR_L                     0000000F
 WUE                               00000001
 Z                                 00000002
 _BOR21V                           00003EFF
@@ -742,13 +757,13 @@ _BOREN_SBODEN                     00003DFF
 _BOR_NSLEEP                       00003EFF
 _BOR_OFF                          00003CFF
 _BOR_ON                           00003FFF
-_BOR_SBODEN                       00003DFF
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 14
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 14
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_BOR_SBODEN                       00003DFF
 _CONFIG1                          00002007
 _CONFIG2                          00002008
 _CPD_OFF                          00003FFF
@@ -801,25 +816,24 @@ _WRT_HALF                         000039FF
 _WRT_OFF                          00003FFF
 _XT_OSC                           00003FF9
 __16F887                          00000001
-cur_addr                          00000110
-MPASM 5.82                          MAIN.ASM   12-18-2018  20:11:21         PAGE 15
+MPASM 5.82                          MAIN.ASM   1-21-2019  1:31:25         PAGE 15
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-end_loop                          00000006
-inst_h                            00000112
-inst_l                            00000111
-inst_rslt                         00000020
+end_loop                          00000005
+inst_h                            00000111
+inst_l                            00000110
+inst_rslt                         00000112
 pm_read                           00000010
 pm_write                          00000025
-start                             00000005
+start                             00000000
 test_sequence                     00000007
-write                             00000032
+write                             00000030
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :    21 reported,     0 suppressed
+Messages :    22 reported,     0 suppressed
 
 
